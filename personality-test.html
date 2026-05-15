@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>你的爱情性格测试 - 专业心理测评</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif; background: linear-gradient(135deg, #fce4ec 0%, #f8bbd0 50%, #f48fb1 100%); min-height: 100vh; }
+
+.screen { display: none; min-height: 100vh; padding: 20px; }
+.screen.active { display: flex; flex-direction: column; align-items: center; justify-content: center; }
+
+/* 封面页 */
+#cover { text-align: center; }
+.cover-icon { font-size: 80px; margin-bottom: 20px; animation: pulse 2s infinite; }
+@keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.1)} }
+.cover-title { font-size: 28px; font-weight: bold; color: #c2185b; margin-bottom: 12px; }
+.cover-subtitle { font-size: 15px; color: #880e4f; margin-bottom: 30px; line-height: 1.6; padding: 0 10px; }
+.stats { display: flex; justify-content: center; gap: 30px; margin-bottom: 35px; }
+.stat-item { text-align: center; }
+.stat-num { font-size: 24px; font-weight: bold; color: #ad1457; }
+.stat-label { font-size: 12px; color: #6a1b9a; margin-top: 4px; }
+.start-btn { background: linear-gradient(135deg, #e91e63, #c2185b); color: white; border: none; padding: 16px 60px; font-size: 18px; border-radius: 50px; cursor: pointer; box-shadow: 0 4px 15px rgba(233,30,99,0.4); transition: all 0.3s; }
+.start-btn:active { transform: scale(0.96); }
+
+/* 答题页 */
+#quiz { padding-top: 60px; }
+.progress-bar { position: fixed; top: 0; left: 0; right: 0; height: 6px; background: rgba(255,255,255,0.3); z-index: 100; }
+.progress-fill { height: 100%; background: linear-gradient(90deg, #e91e63, #ff6090); transition: width 0.3s; border-radius: 0 3px 3px 0; }
+.quiz-header { position: fixed; top: 6px; left: 0; right: 0; padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; z-index: 99; }
+.quiz-badge { background: rgba(255,255,255,0.9); padding: 6px 16px; border-radius: 20px; font-size: 13px; color: #c2185b; font-weight: 600; }
+.quiz-counter { background: rgba(255,255,255,0.9); padding: 6px 16px; border-radius: 20px; font-size: 13px; color: #880e4f; }
+.quiz-progress-text { font-size: 14px; color: #880e4f; text-align: center; margin-bottom: 20px; margin-top: 60px; }
+.question-card { background: white; border-radius: 20px; padding: 28px 22px; width: 100%; max-width: 420px; box-shadow: 0 8px 30px rgba(0,0,0,0.08); }
+.question-text { font-size: 18px; font-weight: 600; color: #333; line-height: 1.6; margin-bottom: 24px; }
+.options { display: flex; flex-direction: column; gap: 12px; }
+.option-btn { background: #fce4ec; border: 2px solid transparent; padding: 14px 18px; border-radius: 12px; font-size: 15px; color: #555; cursor: pointer; transition: all 0.2s; text-align: left; line-height: 1.5; }
+.option-btn:active, .option-btn.selected { background: #f8bbd0; border-color: #e91e63; color: #880e4f; font-weight: 600; }
+
+/* 加载页 */
+#loading { text-align: center; }
+.loading-spinner { width: 50px; height: 50px; border: 4px solid rgba(255,255,255,0.3); border-top: 4px solid #e91e63; border-radius: 50%; animation: spin 0.8s linear infinite; margin-bottom: 20px; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.loading-text { font-size: 16px; color: #880e4f; }
+
+/* 结果页 */
+#result { padding-top: 40px; }
+.result-card { background: white; border-radius: 24px; padding: 0; width: 100%; max-width: 420px; box-shadow: 0 10px 40px rgba(0,0,0,0.1); overflow: hidden; }
+.result-header { background: linear-gradient(135deg, #e91e63, #f06292); padding: 30px 24px 24px; text-align: center; color: white; position: relative; }
+.result-emoji { font-size: 60px; margin-bottom: 12px; }
+.result-type { font-size: 22px; font-weight: bold; margin-bottom: 8px; }
+.result-tagline { font-size: 14px; opacity: 0.9; line-height: 1.5; }
+.result-body { padding: 24px; }
+.result-section { margin-bottom: 22px; }
+.result-section-title { font-size: 15px; font-weight: bold; color: #c2185b; margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
+.result-section-title::before { content: ''; width: 4px; height: 16px; background: #e91e63; border-radius: 2px; }
+.result-text { font-size: 14px; color: #555; line-height: 1.7; }
+.trait-tags { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+.trait-tag { background: #fce4ec; color: #c2185b; padding: 6px 14px; border-radius: 20px; font-size: 13px; }
+
+/* 报告页 */
+#report { padding-top: 20px; }
+.report-card { background: white; border-radius: 20px; padding: 28px 22px; width: 100%; max-width: 420px; box-shadow: 0 8px 30px rgba(0,0,0,0.08); }
+.report-title { font-size: 20px; font-weight: bold; color: #c2185b; text-align: center; margin-bottom: 6px; }
+.report-subtitle { font-size: 13px; color: #999; text-align: center; margin-bottom: 24px; }
+.report-section { margin-bottom: 24px; }
+.report-section h3 { font-size: 15px; font-weight: bold; color: #e91e63; margin-bottom: 10px; padding-bottom: 8px; border-bottom: 1px solid #fce4ec; }
+.report-section p, .report-section li { font-size: 14px; color: #555; line-height: 1.8; }
+.report-section ul { padding-left: 20px; }
+.report-highlight { background: #fce4ec; padding: 16px; border-radius: 12px; margin: 14px 0; }
+.report-highlight p { color: #880e4f; font-weight: 500; }
+.paywall { background: linear-gradient(135deg, #fce4ec, #f8bbd0); padding: 24px; border-radius: 16px; text-align: center; margin-top: 20px; }
+.paywall-title { font-size: 16px; font-weight: bold; color: #c2185b; margin-bottom: 8px; }
+.paywall-desc { font-size: 13px; color: #880e4f; margin-bottom: 16px; }
+.pay-btn { background: linear-gradient(135deg, #ff6f00, #ff8f00); color: white; border: none; padding: 14px 40px; font-size: 16px; border-radius: 50px; cursor: pointer; font-weight: bold; box-shadow: 0 4px 15px rgba(255,111,0,0.4); display: inline-block; text-decoration: none; }
+
+/* 分享按钮 */
+.share-hint { font-size: 13px; color: #999; text-align: center; margin-top: 18px; line-height: 1.6; }
+
+/* 底部按钮 */
+.action-btn { background: linear-gradient(135deg, #e91e63, #c2185b); color: white; border: none; padding: 14px 40px; font-size: 16px; border-radius: 50px; cursor: pointer; margin-top: 20px; width: 100%; max-width: 420px; }
+.action-btn.secondary { background: white; color: #e91e63; border: 2px solid #e91e63; }
+</style>
+</head>
+<body>
+
+<!-- 封面页 -->
+<div id="cover" class="screen active">
+  <div class="cover-icon">💗</div>
+  <div class="cover-title">你的爱情性格是什么样的？</div>
+  <div class="cover-subtitle">专业心理测评 · 揭示你的情感模式<br>了解你吸引怎样的另一半</div>
+  <div class="stats">
+    <div class="stat-item"><div class="stat-num">52,381</div><div class="stat-label">人已测试</div></div>
+    <div class="stat-item"><div class="stat-num">8-10</div><div class="stat-label">分钟完成</div></div>
+    <div class="stat-item"><div class="stat-num">96%</div><div class="stat-label">觉得准确</div></div>
+  </div>
+  <button class="start-btn" onclick="startQuiz()">开始测试</button>
+  <div style="margin-top:18px;font-size:12px;color:#999;">基于依恋理论 · 专业心理模型</div>
+</div>
+
+<!-- 答题页 -->
+<div id="quiz" class="screen">
+  <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+  <div class="quiz-header">
+    <div class="quiz-badge" id="quizBadge">情感性格测试</div>
+    <div class="quiz-counter" id="quizCounter">1 / 10</div>
+  </div>
+  <div class="quiz-progress-text" id="quizProgressText"></div>
+  <div class="question-card">
+    <div class="question-text" id="questionText"></div>
+    <div class="options" id="optionsContainer"></div>
+  </div>
+</div>
+
+<!-- 加载页 -->
+<div id="loading" class="screen">
+  <div class="loading-spinner"></div>
+  <div class="loading-text">正在分析你的情感性格...</div>
+</div>
+
+<!-- 结果页（免费预览） -->
+<div id="result" class="screen">
+  <div class="result-card">
+    <div class="result-header" id="resultHeader">
+      <div class="result-emoji" id="resultEmoji"></div>
+      <div class="result-type" id="resultType"></div>
+      <div class="result-tagline" id="resultTagline"></div>
+    </div>
+    <div class="result-body">
+      <div class="result-section">
+        <div class="result-section-title">你的情感特质</div>
+        <div class="trait-tags" id="traitTags"></div>
+      </div>
+      <div class="result-section">
+        <div class="result-section-title">专业解读</div>
+        <div class="result-text" id="resultSummary"></div>
+      </div>
+      <div class="result-section">
+        <div class="result-section-title">你吸引的男性类型</div>
+        <div class="result-text" id="resultAttracts"></div>
+      </div>
+    </div>
+  </div>
+  <button class="action-btn" onclick="showReport()" style="margin-top:16px;max-width:420px;width:100%;">查看详细分析报告</button>
+  <div class="share-hint">📤 分享给闺蜜，一起了解自己！</div>
+</div>
+
+<!-- 详细报告页（含付费墙） -->
+<div id="report" class="screen">
+  <div class="report-card">
+    <div class="report-title">你的专属情感分析报告</div>
+    <div class="report-subtitle">基于专业心理测评 · 个性化建议</div>
+
+    <div class="report-section">
+      <h3>🧠 专业测评背景</h3>
+      <p>本测试融合<strong>依恋理论（Attachment Theory）</strong>、<strong>大五人格模型</strong>与<strong>戈特曼关系心理学</strong>，通过多维度的科学问题，精准分析你的情感性格类型，揭示你天然吸引的男性类型，并提供实用的情感经营建议。</p>
+    </div>
+
+    <div class="report-section">
+      <h3>💡 你的情感性格类型</h3>
+      <p id="reportType"></p>
+    </div>
+
+    <div class="report-section">
+      <h3>🔍 深度心理分析</h3>
+      <div id="reportAnalysis"></div>
+    </div>
+
+    <div class="report-section">
+      <h3>💗 你最吸引的男性类型</h3>
+      <div id="reportAttracts"></div>
+    </div>
+
+    <!-- 免费预览到此结束，下方是付费内容预览 -->
+    <div class="paywall" id="paywallSection">
+      <div class="paywall-title">🔓 解锁完整版专属报告</div>
+      <div class="paywall-desc">
+        ✅ 你的情感盲点深度解析<br>
+        ✅ 专属追求策略（他为什么会主动？）<br>
+        ✅ 关系经营的具体行动指南<br>
+        ✅ 情感沟通话术与技巧<br>
+        ✅ 专属情感顾问咨询服务
+      </div>
+      <div style="margin:16px 0;">
+        <span style="font-size:32px;font-weight:bold;color:#e91e63;">¥9.9</span>
+        <span style="font-size:13px;color:#999;text-decoration:line-through;margin-left:8px;">原价 ¥49</span>
+        <span style="background:#ff6f00;color:white;font-size:11px;padding:2px 8px;border-radius:10px;margin-left:8px;">限时优惠</span>
+      </div>
+      <a class="pay-btn" href="javascript:void(0)" onclick="alert('支付功能接入中，敬请期待！\n\n完整报告内容会在正式上线后开放。')">立即解锁 ¥9.9</a>
+      <div style="font-size:11px;color:#999;margin-top:10px;">🔒 支付安全 · 一键获取 · 永久有效</div>
+    </div>
+
+    <div style="margin-top:20px;">
+      <button class="action-btn secondary" onclick="goTo('cover')" style="margin-bottom:12px;">重新测试</button>
+    </div>
+  </div>
+  <div class="share-hint">📤 分享给闺蜜，一起了解自己！</div>
+</div>
+
+<script>
+// ========================
+// 题目数据（心理学专业设计）
+// ========================
+const questions = [
+  {
+    id: 1,
+    dimension: "attachment",
+    text: "当你开始一段新恋情时，你内心最真实的感受是？",
+    options: [
+      { text: "充满期待，也很踏实，相信自己值得被爱", score: { secure: 3, anxious: 0, avoidant: 0, passionate: 1 } },
+      { text: "非常兴奋，但总担心他不会一直喜欢我", score: { secure: 0, anxious: 3, avoidant: 0, passionate: 1 } },
+      { text: "有点紧张，害怕受伤害，想先观察清楚", score: { secure: 1, anxious: 0, avoidant: 3, passionate: 0 } },
+      { text: "超级激动！马上就想把所有热情都给他", score: { secure: 1, anxious: 1, avoidant: 0, passionate: 3 } }
+    ]
+  },
+  {
+    id: 2,
+    dimension: "extraversion",
+    text: "在社交场合中，朋友们通常怎么形容你？",
+    options: [
+      { text: "温暖亲和，大家都愿意跟我聊心里话", score: { secure: 2, anxious: 0, avoidant: 1, passionate: 2 } },
+      { text: "活泼开朗，是人群中的开心果", score: { secure: 1, anxious: 1, avoidant: 0, passionate: 3 } },
+      { text: "安静神秘，少数人才能走进我的世界", score: { secure: 1, anxious: 0, avoidant: 3, passionate: 0 } },
+      { text: "有点敏感，但在信任的人面前很真诚", score: { secure: 2, anxious: 2, avoidant: 1, passionate: 0 } }
+    ]
+  },
+  {
+    id: 3,
+    dimension: "values",
+    text: "你认为一段理想的感情，最重要的是什么？",
+    options: [
+      { text: "彼此信任，有安全感，能做真实的自己", score: { secure: 3, anxious: 1, avoidant: 0, passionate: 0 } },
+      { text: "甜蜜浪漫，每天都有新鲜感和惊喜", score: { secure: 0, anxious: 2, avoidant: 0, passionate: 3 } },
+      { text: "互相尊重空间，不束缚彼此，各自独立", score: { secure: 2, anxious: 0, avoidant: 3, passionate: 0 } },
+      { text: "共同成长，一起变成更好的人", score: { secure: 3, anxious: 0, avoidant: 0, passionate: 2 } }
+    ]
+  },
+  {
+    id: 4,
+    dimension: "conflict",
+    text: "当和喜欢的人发生矛盾时，你通常会？",
+    options: [
+      { text: "主动沟通，理性表达自己的感受和需求", score: { secure: 3, anxious: 0, avoidant: 0, passionate: 1 } },
+      { text: "很着急，会不断找他沟通，怕他离开我", score: { secure: 0, anxious: 3, avoidant: 0, passionate: 1 } },
+      { text: "先冷静，需要空间思考，不喜欢逼得太紧", score: { secure: 1, anxious: 0, avoidant: 3, passionate: 0 } },
+      { text: "情绪化，可能会说气话，但过后会后悔", score: { secure: 0, anxious: 2, avoidant: 0, passionate: 3 } }
+    ]
+  },
+  {
+    id: 5,
+    dimension: "selfPerception",
+    text: "你觉得自己在感情中最大的魅力是？",
+    options: [
+      { text: "温柔体贴，善解人意，给人安全感", score: { secure: 3, anxious: 1, avoidant: 0, passionate: 0 } },
+      { text: "热情真诚，爱笑爱生活，很有感染力", score: { secure: 0, anxious: 1, avoidant: 0, passionate: 3 } },
+      { text: "独立有个性，不依赖，有自己的世界", score: { secure: 1, anxious: 0, avoidant: 3, passionate: 0 } },
+      { text: "真实不做作，虽然有时会不安，但很努力", score: { secure: 1, anxious: 3, avoidant: 1, passionate: 0 } }
+    ]
+  },
+  {
+    id: 6,
+    dimension: "datingStyle",
+    text: "你理想中的约会方式是？",
+    options: [
+      { text: "安静地聊聊天，深度交流，了解彼此内心", score: { secure: 3, anxious: 0, avoidant: 1, passionate: 0 } },
+      { text: "一起做有趣的事，旅行、冒险、创造共同回忆", score: { secure: 0, anxious: 1, avoidant: 0, passionate: 3 } },
+      { text: "各自做喜欢的事，偶尔甜蜜互动，轻松自在", score: { secure: 2, anxious: 0, avoidant: 3, passionate: 0 } },
+      { text: "精心准备浪漫惊喜，让他感受到被重视", score: { secure: 0, anxious: 2, avoidant: 0, passionate: 3 } }
+    ]
+  },
+  {
+    id: 7,
+    dimension: "commitment",
+    text: "关于承诺和未来，你的态度是？",
+    options: [
+      { text: "相信真爱，愿意为对的人付出和承诺", score: { secure: 3, anxious: 1, avoidant: 0, passionate: 1 } },
+      { text: "很渴望稳定，但总怕对方不是认真的", score: { secure: 0, anxious: 3, avoidant: 0, passionate: 0 } },
+      { text: "慢慢来，不着急确定关系，享受当下", score: { secure: 1, anxious: 0, avoidant: 3, passionate: 2 } },
+      { text: "全情投入，爱就爱到极致，不在乎后果", score: { secure: 0, anxious: 1, avoidant: 0, passionate: 3 } }
+    ]
+  },
+  {
+    id: 8,
+    dimension: "attraction",
+    text: "你最容易被哪种男生吸引？",
+    options: [
+      { text: "成熟稳重、有安全感、情绪稳定的男生", score: { secure: 3, anxious: 0, avoidant: 0, passionate: 0 } },
+      { text: "阳光热情、主动追求、富有浪漫情趣的男生", score: { secure: 0, anxious: 1, avoidant: 0, passionate: 3 } },
+      { text: "有点神秘、独立有主见、不粘人的男生", score: { secure: 0, anxious: 0, avoidant: 3, passionate: 1 } },
+      { text: "需要被理解、温柔脆弱、让我想照顾的男生", score: { secure: 1, anxious: 3, avoidant: 0, passionate: 0 } }
+    ]
+  },
+  {
+    id: 9,
+    dimension: "socialRole",
+    text: "在朋友圈中，你通常是？",
+    options: [
+      { text: "倾听者和支持者，朋友们都信任我", score: { secure: 3, anxious: 1, avoidant: 0, passionate: 0 } },
+      { text: "气氛制造者，大家都喜欢跟我在一起", score: { secure: 0, anxious: 0, avoidant: 0, passionate: 3 } },
+      { text: "低调有深度，少数人懂我的内涵", score: { secure: 1, anxious: 0, avoidant: 3, passionate: 0 } },
+      { text: "比较被动，但在乎别人的看法，希望被认可", score: { secure: 0, anxious: 3, avoidant: 1, passionate: 0 } }
+    ]
+  },
+  {
+    id: 10,
+    dimension: "pursuit",
+    text: "如果喜欢上一个男生，你会？",
+    options: [
+      { text: "适当主动，但保持分寸，让他来追我", score: { secure: 3, anxious: 0, avoidant: 0, passionate: 1 } },
+      { text: "直接表达好感，主动创造机会接近他", score: { secure: 1, anxious: 0, avoidant: 0, passionate: 3 } },
+      { text: "暗示但不明说，等他主动来猜测我的心意", score: { secure: 0, anxious: 2, avoidant: 2, passionate: 0 } },
+      { text: "先观察很久，确认他也喜欢我，才敢行动", score: { secure: 1, anxious: 3, avoidant: 1, passionate: 0 } }
+    ]
+  }
+];
+
+// ========================
+// 类型定义
+// ========================
+const types = {
+  secure: {
+    emoji: "🌸",
+    name: "安全型连接者",
+    tagline: "温柔且有力量，你天生吸引靠谱的人",
+    traits: ["情感稳定", "善解人意", "值得信赖", "沟通顺畅"],
+    summary: "你拥有健康的情感模式，能够在亲密关系中保持自我，也能给予对方足够的信任与空间。你的安全感来自内心，而不是依赖他人的认可。这种稳定的能量，让你天然吸引那些同样成熟、真诚的男性。",
+    attracts: "你最容易吸引<strong>成熟稳重、情绪稳定、有责任感</strong>的男性。他们通常事业有成或正在稳步成长，看重内在品质，会被你的真诚和稳定深深吸引。他们不会玩弄感情，而是认真对待每一段关系。",
+    analysis: "<p>作为<strong>安全型连接者</strong>，你在感情中最突出的优势是<strong>情绪稳定性</strong>和<strong>健康的依恋模式</strong>。</p><p>根据依恋理论，安全型依恋者占总人群的约50%，是最理想的恋爱类型。你在关系中能够：</p><ul><li>自然地表达需求和感受，不害怕被拒绝</li><li>给予对方信任和空间，不控制不猜疑</li><li>在冲突中保持理性，寻求共赢解决方案</li><li>既能亲密，也能独立，不需要通过依附来获得安全感</li></ul><p><strong>你的情感盲点：</strong>有时你可能过于理性，让对方觉得你不够热烈；或者你太会照顾别人，忽略了自己的需求。</p>",
+    attractsDetail: "<p><strong>你最吸引的男性类型：</strong></p><ul><li>🌟 <strong>成熟稳重型：</strong>30岁以上，事业稳定，寻求长期稳定关系，欣赏你的成熟与包容</li><li>💼 <strong>责任感强的男性：</strong>他们看重内在品质，会被你的真诚和稳定深深吸引</li><li>🎯 <strong>同样安全型的男性：</strong>你们之间的关系是健康而持久的，互相尊重、彼此支持</li></ul><p><strong>吸引原因：</strong>你的情绪稳定和真诚，让男性感到安全和放松，这是他们最看重的长期伴侣品质。</p>",
+    advice: "<div class='report-highlight'><p>💡 <strong>专属建议：</strong>不要害怕展示你的需求。你的「理性」有时会被误解为「不够爱」。学会适度表达自己的渴望和脆弱，会让关系更深一层。</p></div><p><strong>具体行动指南：</strong></p><ul><li>每周主动表达1-2次你的情感需求，用「我觉得……」开头</li><li>在关系中加入更多浪漫元素，不要让理性淹没激情</li><li>学会接受对方的好，不要总是扮演「照顾者」角色</li></ul>"
+  },
+  anxious: {
+    emoji: "🌙",
+    name: "热情焦虑型恋人",
+    tagline: "你用真心爱这个世界，也渴望被坚定选择",
+    traits: ["情感丰富", "真诚热烈", "敏感细腻", "渴望被爱"],
+    summary: "你对感情全情投入，真诚而热烈。你渴望深度的情感连接，但有时会因为害怕失去而感到焦虑。你的敏感让你能够捕捉到别人忽略的细节，这种细腻是你独特的魅力。你需要的是一个能给你安全感、愿意耐心回应你情感需求的伴侣。",
+    attracts: "你最容易吸引<strong>温柔包容、有耐心、情感成熟</strong>的男性，也容易吸引那些<strong>需要被照顾、情感上略显脆弱</strong>的男生。你的真诚和热烈，会让那些内心孤独的男性感到被理解和温暖。",
+    analysis: "<p>作为<strong>热情焦虑型恋人</strong>，你的情感模式在依恋理论中属于<strong>焦虑型依恋</strong>。这并不意味着「不好」——许多非常有能力爱的人都是这个类型。</p><p><strong>你的核心特质：</strong></p><ul><li>情感丰富，爱得深沉而热烈</li><li>对关系的投入度极高，愿意为爱付出</li><li>敏感细腻，能感知对方情绪的微妙变化</li><li>渴望深度连接，不喜欢肤浅的关系</li></ul><p><strong>你的挑战：</strong>有时会因为「害怕失去」而过度付出，或者在对方需要空间时感到不安。这不是你的错——这只是你的依恋系统在保护你。</p>",
+    attractsDetail: "<p><strong>你最吸引的男性类型：</strong></p><ul><li>🌊 <strong>温柔包容型：</strong>情感成熟，有耐心，愿意倾听和回应你的情感需求</li><li>🐻 <strong>需要被照顾型：</strong>内心略显脆弱，会被你的真诚和温暖深深吸引</li><li>🎨 <strong>艺术气息型：</strong>情感丰富，理解你的敏感，与你产生深度共鸣</li></ul><p><strong>吸引原因：</strong>你的真诚和热烈，让那些内心有孤独感的男性感到被理解。你的敏感，是你最独特的魅力。</p>",
+    advice: "<div class='report-highlight'><p>💡 <strong>专属建议：</strong>学会「先装满自己的杯子」。你的爱很珍贵，但不要让它成为你唯一的价值来源。当你学会爱自己，你吸引来的关系会更健康。</p></div><p><strong>具体行动指南：</strong></p><ul><li>每天花10分钟做一件「只为自己」的事，重建自我价值感</li><li>当感到焦虑时，先问自己：「这个感受是关于现在的他，还是过去的我？」</li><li>学会适度「后撤」——不要每次都主动，给他表达的机会</li><li>练习直接表达需求，而不是暗示或生气</li></ul>"
+  },
+  avoidant: {
+    emoji: "🦋",
+    name: "独立回避型自由魂",
+    tagline: "你有自己的星辰大海，懂你的人会静静靠近",
+    traits: ["独立有主见", "有内涵", "不随波逐流", "需要空间"],
+    summary: "你重视独立和自由，有自己的内心世界和追求。你不会轻易对人敞开心扉，但一旦你真正信任一个人，你的忠诚和深度是无人能及的。你的神秘感和独立性，反而让你散发出独特的吸引力。你需要的是一个尊重你空间、不急于占有你的伴侣。",
+    attracts: "你最容易吸引<strong>有内涵、尊重独立、不急于占有</strong>的男性。他们通常被你的神秘感和深度所吸引，愿意花时间去了解真正的你。他们也往往是<strong>思考型、有自己事业和爱好</strong>的人，欣赏你的独立。",
+    analysis: "<p>作为<strong>独立回避型自由魂</strong>，你的情感模式在依恋理论中属于<strong>回避型依恋</strong>。这同样不是缺陷——许多成功、有魅力的人都有这个特质。</p><p><strong>你的核心特质：</strong></p><ul><li>高度独立，有自己的事业/兴趣和内心世界</li><li>不轻易敞开心扉，但忠诚度和深度极高</li><li>需要个人空间，在关系中保持自我</li><li>通常被误认为「高冷」，其实只是慢热和谨慎</li></ul><p><strong>你的优势：</strong>你不会因为没有伴侣就失去自我价值。你的生活是丰富的，这让你在关系中保持平等和健康的距离。</p>",
+    attractsDetail: "<p><strong>你最吸引的男性类型：</strong></p><ul><li>🎭 <strong>神秘型男性：</strong>同样有深度、不善于表达，但会被你的内涵吸引</li><li>📚 <strong>思考型男性：</strong>有自己事业和爱好，欣赏独立女性，不会过分粘人</li><li>🌍 <strong>有自己世界的人：</strong>理解你对空间的需求，愿意慢慢走进你的心</li></ul><p><strong>吸引原因：</strong>你的独立和神秘感，让那些同样有内涵的男性感到挑战和有兴趣。你不会「轻易到手」，这反而增加了你的吸引力。</p>",
+    advice: "<div class='report-highlight'><p>💡 <strong>专属建议：</strong>试着给那些「慢热但真诚」的人一个机会。你保护自己没有错，但有时「适度敞开心扉」会让对的人更快找到你。</p></div><p><strong>具体行动指南：</strong></p><ul><li>当你感到想「后退」时，试着先说一句话：「我需要一点空间，但我还在乎你」</li><li>学会识别「健康的亲密」和「被控制」的区别——前者值得你敞开心扉</li><li>每周主动分享1件关于自己的小事，让对方感受到你的信任</li><li>找一个同样需要空间的伴侣，你们会相处得非常舒服</li></ul>"
+  },
+  passionate: {
+    emoji: "🔥",
+    name: "激情探索型冒险家",
+    tagline: "你的热情像火焰，照亮自己也吸引着对的人",
+    traits: ["热情洋溢", "富有魅力", "爱冒险", "充满生命力"],
+    summary: "你充满生命力和热情，爱笑爱生活，走到哪里都能带来快乐和活力。你对爱情充满浪漫的想象，愿意为爱勇敢尝试。你的热情具有感染力，让你在人群中格外耀眼。你需要的是一个能陪你一起探索世界、同样热爱生活的伴侣。",
+    attracts: "你最容易吸引<strong>阳光外向、爱冒险、同样热情</strong>的男性。你们在一起会是充满激情和乐趣的组合。你也容易吸引那些<strong>被你的活力感染、想要更多生活激情</strong>的男生。你们的爱情会是热烈而多彩的。",
+    analysis: "<p>作为<strong>激情探索型冒险家</strong>，你的情感模式融合了<strong>外向性、开放性</strong>和<strong>情感表达力</strong>。在大五人格模型中，你的「外向性」和「开放性」得分很高。</p><p><strong>你的核心特质：</strong></p><ul><li>热情洋溢，充满活力，是人群中的发光体</li><li>对爱情充满浪漫想象，愿意为爱勇敢</li><li>富有创造力，生活从不无聊</li><li>情感表达直接，爱就爱得淋漓尽致</li></ul><p><strong>你的魅力：</strong>你的热情具有感染力。和妳在一起，男性会感到年轻、有活力、对生活充满期待。这是非常稀缺的魅力。</p>",
+    attractsDetail: "<p><strong>你最吸引的男性类型：</strong></p><ul><li>🌞 <strong>阳光冒险型：</strong>同样外向热情，爱运动/旅行/探索，你们在一起充满乐趣</li><li>🎪 <strong>创意艺术型：</strong>欣赏你的表达力和生命力，你们的关系充满激情和灵感</li><li>🏄 <strong>热爱生活型：</strong>他们想要一个「一起玩、一起疯、一起成长」的伴侣，而你正是</li></ul><p><strong>吸引原因：</strong>你的生命力和热情，让那些同样热爱生活的男性感到「这就是我想要的生活状态」。你的能量，就是你的吸引力。</p>",
+    advice: "<div class='report-highlight'><p>💡 <strong>专属建议：</strong>热情是你的超能力，但也要学会「慢下来」。有时候，让关系自然发展，而不是急于推进，反而会让对的人更珍惜你。</p></div><p><strong>具体行动指南：</strong></p><ul><li>在关系初期，练习「节奏感」——热情但不急于确定关系</li><li>保留一些神秘感，不要一次性把自己的所有都展示出来</li><li>找一个能陪你冒险、但也愿意陪你安静的人</li><li>你的「直接表达」是优势，但也要学会读对方的节奏</li></ul>"
+  }
+};
+
+// ========================
+// 核心逻辑
+// ========================
+let currentQ = 0;
+let scores = { secure: 0, anxious: 0, avoidant: 0, passionate: 0 };
+let回答顺序 = [];
+
+function startQuiz() {
+  currentQ = 0;
+  scores = { secure: 0, anxious: 0, avoidant: 0, passionate: 0 };
+  goTo('quiz');
+  showQuestion();
+}
+
+function showQuestion() {
+  const q = questions[currentQ];
+  const progress = ((currentQ) / questions.length) * 100;
+  document.getElementById('progressFill').style.width = progress + '%';
+  document.getElementById('quizCounter').textContent = `${currentQ + 1} / ${questions.length}`;
+  document.getElementById('quizProgressText').textContent = getProgressText(currentQ);
+  document.getElementById('questionText').textContent = q.text;
+
+  const container = document.getElementById('optionsContainer');
+  container.innerHTML = '';
+  const shuffled = [...q.options].sort(() => Math.random() - 0.5);
+  回答顺序[currentQ] = shuffled;
+  shuffled.forEach((opt, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'option-btn';
+    btn.textContent = opt.text;
+    btn.onclick = () => selectOption(btn, opt.score);
+    container.appendChild(btn);
+  });
+}
+
+function getProgressText(idx) {
+  const texts = [
+    "开始了解你的情感模式...",
+    "继续探索你的内心...",
+    "你的答案正在揭示真相...",
+    "越来越接近真实的你...",
+    "你的情感地图逐渐清晰...",
+    "继续，答案就在前方...",
+    "你的恋爱性格即将揭晓...",
+    "最后几题了，坚持一下...",
+    "马上就能看到结果了...",
+    "最后一题！说出你的真心话..."
+  ];
+  return texts[idx] || "正在分析...";
+}
+
+function selectOption(btn, score) {
+  const container = document.getElementById('optionsContainer');
+  Array.from(container.children).forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+
+  setTimeout(() => {
+    Object.keys(score).forEach(k => { scores[k] += score[k]; });
+    currentQ++;
+    if (currentQ < questions.length) {
+      showQuestion();
+    } else {
+      showLoading();
+    }
+  }, 400);
+}
+
+function showLoading() {
+  goTo('loading');
+  setTimeout(showResult, 2000);
+}
+
+function showResult() {
+  const type = getResultType();
+  const t = types[type];
+
+  document.getElementById('resultEmoji').textContent = t.emoji;
+  document.getElementById('resultType').textContent = t.name;
+  document.getElementById('resultTagline').textContent = t.tagline;
+  document.getElementById('resultSummary').textContent = t.summary;
+  document.getElementById('resultAttracts').innerHTML = t.attracts;
+
+  const tagsEl = document.getElementById('traitTags');
+  tagsEl.innerHTML = '';
+  t.traits.forEach(tag => {
+    const span = document.createElement('span');
+    span.className = 'trait-tag';
+    span.textContent = tag;
+    tagsEl.appendChild(span);
+  });
+
+  document.getElementById('progressFill').style.width = '100%';
+
+  // 存储结果类型供报告页使用
+  sessionStorage.setItem('resultType', type);
+  goTo('result');
+}
+
+function getResultType() {
+  let max = 'secure';
+  let maxScore = 0;
+  Object.keys(scores).forEach(k => {
+    if (scores[k] > maxScore) {
+      maxScore = scores[k];
+      max = k;
+    }
+  });
+  return max;
+}
+
+function showReport() {
+  const type = sessionStorage.getItem('resultType') || 'secure';
+  const t = types[type];
+  document.getElementById('reportType').innerHTML = `<span style="font-size:28px;">${t.emoji}</span> <strong>${t.name}</strong><br><span style="font-size:14px;color:#999;font-weight:normal;">${t.tagline}</span>`;
+  document.getElementById('reportAnalysis').innerHTML = t.analysis;
+  document.getElementById('reportAttracts').innerHTML = t.attractsDetail;
+  goTo('report');
+}
+
+function goTo(screenId) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(screenId).classList.add('active');
+  window.scrollTo(0, 0);
+}
+</script>
+</body>
+</html>
