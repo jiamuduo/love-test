@@ -390,25 +390,34 @@ function startQuiz() {
 }
 
 function showQuestion() {
-  const q = questions[currentQ];
-  const progress = ((currentQ) / questions.length) * 100;
-  document.getElementById('progressFill').style.width = progress + '%';
-  document.getElementById('quizCounter').textContent = (currentQ + 1) + ' / ' + questions.length;
-  document.getElementById('quizProgressText').textContent = getProgressText(currentQ);
-  document.getElementById('questionText').textContent = q.text;
+  try {
+    var q = questions[currentQ];
+    if (!q) { return; }
+    var progress = (currentQ / questions.length) * 100;
+    var pf = document.getElementById('progressFill');
+    if (pf) pf.style.width = progress + '%';
+    var counter = document.getElementById('quizCounter');
+    if (counter) counter.textContent = (currentQ + 1) + ' / ' + questions.length;
+    var pt = document.getElementById('quizProgressText');
+    if (pt) pt.textContent = getProgressText(currentQ);
+    var qt = document.getElementById('questionText');
+    if (qt) qt.textContent = q.text;
 
-  const container = document.getElementById('optionsContainer');
-  container.innerHTML = '';
-  const shuffled = [].concat(q.options).sort(function() { return 0.5 - Math.random(); });
-  回答顺序[currentQ] = shuffled;
-  for (var i = 0; i < shuffled.length; i++) {
-    var opt = shuffled[i];
-    var btn = document.createElement('button');
-    btn.className = 'option-btn';
-    btn.textContent = opt.text;
-    btn.setAttribute('data-scores', JSON.stringify(opt.score));
-    btn.onclick = function() { handleOptionClick(this); };
-    container.appendChild(btn);
+    var container = document.getElementById('optionsContainer');
+    if (!container) { return; }
+    container.innerHTML = '';
+    var shuffled = [].concat(q.options).sort(function() { return 0.5 - Math.random(); });
+    for (var i = 0; i < shuffled.length; i++) {
+      var opt = shuffled[i];
+      var btn = document.createElement('button');
+      btn.className = 'option-btn';
+      btn.textContent = (i + 1) + '. ' + opt.text;
+      btn.setAttribute('data-scores', JSON.stringify(opt.score));
+      btn.onclick = function() { handleOptionClick(this); };
+      container.appendChild(btn);
+    }
+  } catch(e) {
+    console.error('showQuestion error:', e.message);
   }
 }
 
