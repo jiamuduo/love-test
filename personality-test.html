@@ -34,18 +34,19 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC'
 .start-btn:active { transform: scale(0.96); }
 
 /* 答题页 */
-#quiz { padding-top: 60px; }
+#quiz { padding-top: 70px; }
 .progress-bar { position: fixed; top: 0; left: 0; right: 0; height: 6px; background: rgba(255,255,255,0.3); z-index: 100; }
 .progress-fill { height: 100%; background: linear-gradient(90deg, #e91e63, #ff6090); transition: width 0.3s; border-radius: 0 3px 3px 0; }
-.quiz-header { position: fixed; top: 6px; left: 0; right: 0; padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; z-index: 99; }
-.quiz-badge { background: rgba(255,255,255,0.9); padding: 6px 16px; border-radius: 20px; font-size: 13px; color: #c2185b; font-weight: 600; }
-.quiz-counter { background: rgba(255,255,255,0.9); padding: 6px 16px; border-radius: 20px; font-size: 13px; color: #880e4f; }
-.quiz-progress-text { font-size: 14px; color: #880e4f; text-align: center; margin-bottom: 20px; margin-top: 60px; }
-.question-card { background: white; border-radius: 20px; padding: 28px 22px; width: 100%; max-width: 420px; box-shadow: 0 8px 30px rgba(0,0,0,0.08); }
-.question-text { font-size: 18px; font-weight: 600; color: #333; line-height: 1.6; margin-bottom: 24px; }
-.options { display: flex; flex-direction: column; gap: 12px; }
-.option-btn { background: #fce4ec; border: 2px solid transparent; padding: 14px 18px; border-radius: 12px; font-size: 15px; color: #555; cursor: pointer; transition: all 0.2s; text-align: left; line-height: 1.5; }
+.quiz-header { position: fixed; top: 6px; left: 0; right: 0; padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; z-index: 99; }
+.quiz-badge { background: rgba(255,255,255,0.95); padding: 6px 16px; border-radius: 20px; font-size: 13px; color: #c2185b; font-weight: 600; }
+.quiz-counter { background: rgba(255,255,255,0.95); padding: 6px 16px; border-radius: 20px; font-size: 13px; color: #880e4f; }
+.quiz-progress-text { font-size: 14px; color: #880e4f; text-align: center; margin-bottom: 16px; }
+.question-card { background: white; border-radius: 20px; padding: 24px 20px; width: 100%; max-width: 420px; box-shadow: 0 8px 30px rgba(0,0,0,0.1); margin: 0 auto; }
+.question-text { font-size: 17px; font-weight: 600; color: #333; line-height: 1.6; margin-bottom: 20px; }
+.options { display: flex; flex-direction: column; gap: 10px; }
+.option-btn { background: #fce4ec; border: 2px solid transparent; padding: 13px 16px; border-radius: 12px; font-size: 14px; color: #555; cursor: pointer; transition: all 0.2s; text-align: left; line-height: 1.5; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
 .option-btn:active, .option-btn.selected { background: #f8bbd0; border-color: #e91e63; color: #880e4f; font-weight: 600; }
+.option-btn.selected { box-shadow: 0 0 0 2px #e91e63; }
 
 /* 加载页 */
 #loading { text-align: center; }
@@ -426,19 +427,35 @@ function getProgressText(idx) {
 }
 
 function selectOption(btn, score) {
+  // 立即禁用所有按钮，防止重复点击
   const container = document.getElementById('optionsContainer');
-  Array.from(container.children).forEach(b => b.classList.remove('selected'));
+  const allBtns = Array.from(container.querySelectorAll('.option-btn'));
+  allBtns.forEach(b => {
+    b.style.pointerEvents = 'none';
+    b.style.opacity = b === btn ? '1' : '0.5';
+  });
+
+  // 标记已选
   btn.classList.add('selected');
+  btn.style.transform = 'scale(0.97)';
+
+  // 分数累加
+  Object.keys(score).forEach(k => { scores[k] += score[k]; });
+  currentQ++;
+
+  // 显示短暂反馈再跳转
+  const nextText = document.createElement('div');
+  nextText.style.cssText = 'text-align:center;color:#e91e63;font-size:14px;margin-top:12px;font-weight:600;';
+  nextText.textContent = currentQ < questions.length ? '下一题 →' : '正在分析...';
+  container.appendChild(nextText);
 
   setTimeout(() => {
-    Object.keys(score).forEach(k => { scores[k] += score[k]; });
-    currentQ++;
     if (currentQ < questions.length) {
       showQuestion();
     } else {
       showLoading();
     }
-  }, 400);
+  }, 600);
 }
 
 function showLoading() {
